@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Paint</title>
+	<meta http-equiv="x-ua-compatible" content="ie=edge" />
+	<meta name="viewport" content="width=device-width user-scalable=no
+		initial-scale=1.0,maximum-scale=1.0"/>
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<link href="paint.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div class="toolbar">
+<div class="tbtn" id="templatesbtn">
+	<img src="assets/appleBtn.png"/></div>
+<div class="tbtn selected" id="brushbtn">
+	<img src="assets/button_brush.png"/></div>
+<div class="tbtn" id="bucketbtn">
+	<img src="assets/button_fill.png"/></div>
+<div class="tbtn" id="eraserbtn">
+	<img src="assets/button_eraser.png"/></div>
+<div class="tbtn" id="clearbtn">
+	<img src="assets/button_eraseAll.png"/></div>
+<div class="tbtn" id="openbtn">
+	<label for="finput">
+		<img src="assets/button_load.png"/>
+	</label>
+	<input type="file" id="finput" /></div>
+<div class="tbtn" id="colorbtn">
+	<img src="assets/colorWheel.png"/></div>
+</div>
+
+<div id="canvaswrap">
+<canvas style="border: 1px solid white" id="c" width="942" height="684"
+	></canvas>
+<div id="pickerhinge"></div>
+</div>
+<div sty;e="clear: both"></div>
+</body>
+
+
+
+
+
+
+
+<!-- fit shader: resizes texture to fit a framebuffer -->
+<script id="vs_fit" type="notjs">
+attribute vec4 position;
+void main() {
+	gl_Position = position;
+}
+</script>
+<script id="fs_fit" type="notjs">
+// fit shader - fit a texture into a framebuffer
+precision mediump float;
+uniform sampler2D texture; // source texture that needs to be copied
+uniform vec2 sres; // source resolugion, aka the size of the texture: xy
+uniform vec2 dres; // destination framebuffer resolution, or canvas size: xy
+
+vec4 bgcolor = vec4(0.8, 0.8, 0.8, 1.0);
+bool center = true;
+
+void main() {
+	vec2 uv = gl_FragCoord.xy / dres; // map current pixel to 0 - 1.0 uvs
+	float daspect = dres.x / dres.y; // destination (canvas) aspect ratio
+	float saspect = sres.x / sres.y; // source texture's aspect ratio
+//	vec4 bgcolor = vec4(0.0, 1.0, 0.0, 1.0); // background color
+	if(daspect < saspect) { // if canvas is portrait and texture landscape
+		float offset = 1.0 - (daspect / saspect); // put it on top
+		if(center) {
+			offset = (1.0 - (daspect / saspect)) * 0.5;
+		}
+		if((uv.y - offset < 0.0) ||
+			(uv.y - offset > (daspect / saspect))) { // zero fill
+			gl_FragColor = bgcolor;
+		} else { // draw texture onto the canvas:
+			uv.y -= offset;
+			uv.y *= saspect / daspect;
+			vec4 fgcolor = texture2D(texture, uv);
+			gl_FragColor = vec4(
+				mix(bgcolor, fgcolor, fgcolor.a).rgb, 1.0);
+		}
+	} else { // if canvas is landscape and texture is portrait:
+		float offset = 0.0; // put it on the left if not centering
+		if(center) {
+			offset = (1.0 - (saspect / daspect)) * 0.5;
+		}
+		if((uv.x - offset < 0.0) ||
+			(uv.x - offset > (saspect / daspect))) { // zero fill
+			gl_FragColor = bgcolor;
+		} else { // draw texture onto the canvas:
+			uv.x -= offset;
+			uv.x *= daspect / saspect;
+			vec4 fgcolor = texture2D(texture, uv);
+			gl_FragColor = vec4(
+				mix(bgcolor, fgcolor, fgcolor.a).rgb, 1.0);
+		}
+	}
+
+}
+</script>
+
+<!-- brush shader: draws a disk -->
+<script id="vs_brush" type="notjs">
+attribute vec4 position;
+attribute vec2 texcoord;
+varying vec2 texco; // texcoord to pass directly to the fragment shader
+void main() {
+	gl_Position = position;
+	texco = texcoord;
+}
+</script>
+<script id="fs_brush" type="notjs">
+precision mediump float;
+uniform vec2 dres; // destination framebuffer resolution, or canvas size: xy
+uniform vec4 fgcolor; // foreground color
+varying vec2 texco; // texture coordinates
+
+void main() {
+	vec2 uv = texco; // we get texture coordinates passed from buffers
+	vec2 pos = vec2(uv.x - 0.5, uv.y - 0.5); // position of disk
+	float dist2 = dot(pos, pos); // square of distance
+	if(dist2 <= 0.25) { // 0.25 is radius squared: 0.5 * 0.5 = 0.25
+//		gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0 - (dist2 * 4.0));
+		gl_FragColor = fgcolor; //vec4(0.0, 0.3, .7, 1.0);
+	} else {
+		gl_FragColor = vec4(1.0, 1.0, 1.0, 0.0);
+	}
+}
+</script>
+
+<script src="jquery.js"></script>
+<script src="jquery.event.ue.js"></script>
+<script src="twgl.js"></script>
+<script src="paint.js"></script>
+</html>
