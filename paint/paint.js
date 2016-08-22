@@ -46,6 +46,7 @@ M.fgcolor = [0.0, 0.3, 0.7, 1.0]; // foreground color
 
 M.sh.fit = twgl.createProgramInfo(gl, ["vs_fit", "fs_fit"]); // build fit shader
 M.sh.brush = twgl.createProgramInfo(gl, ["vs_brush", "fs_brush"]); // draws disk
+M.sh.eraser = twgl.createProgramInfo(gl, ["vs_eraser", "fs_eraser"]); // eraser
 
 // buffer to draw a square:
 var arrays = {
@@ -54,6 +55,8 @@ var arrays = {
 M.bufinfo = twgl.createBufferInfoFromArrays(gl, arrays);
 
 M.texmeta = {}; // width and height of each source image will be stored here
+M.textures = {};
+/*
 M.textures = twgl.createTextures(gl, {
 	// cherry
 //	cherry: { src: "img.jpg", mag: gl.LINEAR }
@@ -61,6 +64,7 @@ M.textures = twgl.createTextures(gl, {
 	cherry: { src: "assets/animals/1.png", mag: gl.LINEAR }
 //	cherry: { src: "img.png", mag: gl.LINEAR }
 }, moretex);
+*/
 
 //gl.bindTexture(gl.TEXTURE_2D, M.textures.cherry);
 gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); // flip texture vertically
@@ -306,7 +310,6 @@ $("#finput").change(function() {
 		var reader = new FileReader();
 		reader.onload = function(e) {
 //			$('#preview').attr('src', e.target.result);
-			console.log(e.target);
 			if(M.textures.template) { // delete previous template
 				gl.deleteTexture(M.textures.template);
 				M.textures.template = undefined;
@@ -359,24 +362,17 @@ M.commit = function() {
 	gl.disable(gl.DEPTH_TEST);
 	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 	twgl.bindFramebufferInfo(gl, M.bg);
-	var uniforms = {
-		dres: [M.bg.width * 0.4, M.bg.height * 0.3]
-	}
-	gl.useProgram(M.sh.brush.program);
-	twgl.setBuffersAndAttributes(gl, M.sh.brush, bufinfo);
-	twgl.setUniforms(M.sh.brush, uniforms);
-	twgl.drawBufferInfo(gl, gl.TRIANGLES, bufinfo);
-
+	drawfg();
 	// clear the M.arrays:
 	M.arrays.position.data = [];
 	M.arrays.texcoord.data = [];
 };
 
 M.doclear = function() {
-	twgl.bindFramebufferInfo(gl, M.bg);
-	gl.clearColor(M.bgcolor[0], M.bgcolor[1], M.bgcolor[2], M.bgcolor[3]);
-	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT |
-						gl.STENCIL_BUFFER_BIT);
+//	twgl.bindFramebufferInfo(gl, M.bg);
+//	gl.clearColor(M.bgcolor[0], M.bgcolor[1], M.bgcolor[2], M.bgcolor[3]);
+//	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT |
+//						gl.STENCIL_BUFFER_BIT);
 	// clear the M.arrays:
 	M.arrays.position.data = [];
 	M.arrays.texcoord.data = [];
@@ -518,26 +514,40 @@ function render() {
 	twgl.drawBufferInfo(gl, gl.TRIANGLES, M.bufinfo);
 
 	// draw a brush directly to the canvas on top of the background:
+	twgl.bindFramebufferInfo(gl, null);
+	drawfg();
+//	requestAnimationFrame(render);
+}
 
+function drawfg() {
 	var bufinfo = twgl.createBufferInfoFromArrays(gl, M.arrays);
-
 
 	gl.enable(gl.BLEND);
 	gl.disable(gl.DEPTH_TEST);
 	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-	twgl.bindFramebufferInfo(gl, null);
-	var uniforms = {
-		dres: [M.bg.width * 0.4, M.bg.height * 0.3],
-		fgcolor: M.curtool == "eraser"?	M.bgcolor: M.fgcolor
+
+	var uniforms = {};
+
+	if(M.curtool == "eraser") {
+		uniforms = {
+			texture: M.textures["template"],
+			sres: M.texmeta["template"],
+			dres: [M.bg.width, M.bg.height]
+		}
+		gl.useProgram(M.sh.eraser.program);
+		twgl.setBuffersAndAttributes(gl, M.sh.eraser, bufinfo);
+		twgl.setUniforms(M.sh.eraser, uniforms);
+	} else {
+		uniforms = {
+			dres: [M.bg.width, M.bg.height],
+			fgcolor: M.fgcolor
+		}
+		gl.useProgram(M.sh.brush.program);
+		twgl.setBuffersAndAttributes(gl, M.sh.brush, bufinfo);
+		twgl.setUniforms(M.sh.brush, uniforms);
 	}
-	gl.useProgram(M.sh.brush.program);
-	twgl.setBuffersAndAttributes(gl, M.sh.brush, bufinfo);
-	twgl.setUniforms(M.sh.brush, uniforms);
+
 	twgl.drawBufferInfo(gl, gl.TRIANGLES, bufinfo);
-
-
-
-//	requestAnimationFrame(render);
 }
 
 //requestAnimationFrame(render);
