@@ -110,8 +110,8 @@
 
 #canvaswrap {
 	position: relative;
-	top: 0;
-	left: 80px;
+	float: left;
+	display: inline-box;
 	width: 942px;
 }
 
@@ -162,11 +162,9 @@
 	background: #666644;
 }
 
-/*
 @media screen and (max-width: 1060px) {
 	.toolbar {
 		height: 75px;
 		width: 942px;
 	}
 }
-*/

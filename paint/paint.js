@@ -298,7 +298,7 @@ $("#eraserbtn").click(function() {
 	M.commit();
 	M.btnswitch("eraser");
 	$("#pickerhinge").empty();
-});
+}); 
 
 $("#clearbtn").click(function() {
 	M.doclear();
