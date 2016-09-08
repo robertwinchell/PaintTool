@@ -26,12 +26,13 @@
 		<img src="assets/button_load.png"/>
 	</label>
 	<input type="file" id="finput" /></div>
+<div class="tbtn" id="thickbtn"></div>
 <div class="tbtn" id="colorbtn">
 	<img src="assets/colorWheel.png"/></div>
 </div>
 
 <div id="canvaswrap">
-<canvas style="border: 1px solid white" id="c" width="942" height="684"
+<canvas style="border: 1px solid white" id="c" width="900" height="650"
 	></canvas>
 <div id="pickerhinge"></div>
 </div>
@@ -58,7 +59,7 @@ uniform sampler2D texture; // source texture that needs to be copied
 uniform vec2 sres; // source resolugion, aka the size of the texture: xy
 uniform vec2 dres; // destination framebuffer resolution, or canvas size: xy
 
-vec4 bgcolor = vec4(0.8, 0.8, 0.8, 1.0);
+vec4 bgcolor = vec4(1.0, 1.0, 1.0, 1.0);
 bool center = true;
 
 void main() {
@@ -121,7 +122,7 @@ uniform vec2 dres; // destination framebuffer resolution, or canvas size: xy
 varying vec2 texco; // texture coordinates
 varying vec2 bgpos; // position in openGL coordinates
 
-vec4 bgcolor = vec4(0.8, 0.8, 0.8, 1.0);
+vec4 bgcolor = vec4(1.0, 1.0, 1.0, 1.0);
 
 void main() {
 	vec2 uv = texco; // we get brush texture coordinates passed from buffers
@@ -140,7 +141,7 @@ void main() {
 		suv.x = duv.x;
 		suv.y = duv.y * (saspect / daspect) +
 					(1.0 - (saspect / daspect)) * 0.5;
-		if(suv.y < 0.0 || suv.y > 1.0) {
+		if(sres.x == 0.0 || suv.y < 0.0 || suv.y > 1.0) {
 			color = bgcolor;
 		} else {
 			color = texture2D(texture, suv);
@@ -149,7 +150,7 @@ void main() {
 		suv.y = duv.y;
 		suv.x = duv.x * (daspect / saspect) +
 					(1.0 - (daspect / saspect)) * 0.5;
-		if(suv.x < 0.0 || suv.x > 1.0) {
+		if(sres.x == 0.0 || suv.x < 0.0 || suv.x > 1.0) {
 			color = bgcolor;
 		} else {
 			color = texture2D(texture, suv);

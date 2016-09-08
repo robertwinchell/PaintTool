@@ -1,6 +1,6 @@
 .toolbar {
 	width: 80px;
-	height: 684px;
+	height: 650px;
 	background: #888888;
 	float: left;
 	text-align: center;
@@ -8,7 +8,7 @@
 
 .vtoolbar {
 	width: 80px;
-	height: 684px;
+	height: 650px;
 	background: #888888;
 	float: left;
 	text-align: center;
@@ -51,9 +51,15 @@
 .swatchbtn {
 	float: left;
 	display: inline-block;
-	width: 40px;
-	height: 50px;
-	margin: 2px;
+	width: 96px;
+	height: 96px;
+	margin: 9px;
+	border-radius: 58px;
+	text-align: center;
+	line-height: 96px;
+	font-size: 80px;
+	color: #fff;
+	text-shadow: 0px 0px 5px rgba(0,0,0,1);
 }
 
 .closebtn {
@@ -112,7 +118,7 @@
 	position: relative;
 	top: 0;
 	left: 80px;
-	width: 942px;
+	width: 900px;
 }
 
 .tbtn:hover {
@@ -126,6 +132,10 @@
 .tbtn.selected, .stbtn.selected {
 	background-color: #e1991a;
 	background-image: linear-gradient(#fdfa93, #e1991a);
+}
+
+#colorbtn, #colorbtn.selected, #colorbtn:hover, #colorbtn:active {
+	background-image: none;
 }
 
 .tbtn img {
@@ -159,7 +169,7 @@
 	left: 0;
 	width: 942px;
 	height: 684px;
-	background: #666644;
+	background: rgba(255, 255, 255, 0.5);
 }
 
 /*

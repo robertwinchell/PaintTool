@@ -28,7 +28,15 @@ M.bucketbtn = $("#bucketbtn");
 M.eraserbtn = $("#eraserbtn");
 M.clearbtn = $("#clearbtn");
 M.openbtn = $("#openbtn");
+M.thickbtn = $("#thickbtn");
 M.colorbtn = $("#colorbtn");
+M.curpal = 9; // current palette element
+M.palette = [
+	[254,133,236],[253,232,169],[187,140,122],[117,210,254],[255,126,112],
+	[246,64, 43], [236,19, 97], [155,27, 176],[103,51, 187],[60, 77, 183],
+	[67, 174,80], [0,  150,135],[1,  186,214],[1,  166,246],[15, 147,245],
+	[136,196,64], [204,221,29], [255,236,22], [254,194,0],  [255,153,0],
+	[0,  0,  0],  [93, 125,138],[157,157,157],[121,85, 71], [255,84, 5]];
 
 M.theme = [["Animals", "animals"], ["Lifestyle", "lifestyle"],
 		["Mandalas", "mandalas"], ["Mazes & Themes", "mazeTheme"],
@@ -36,13 +44,13 @@ M.theme = [["Animals", "animals"], ["Lifestyle", "lifestyle"],
 		["Religious & Holidays", "relandhol"]];
 
 M.radii = [1, 2, 3, 4, 5, 8, 10, 15, 20, 30];
-M.brr = 20; // brush radius in pixels
+M.brr = 5; // brush radius in pixels
 M.curtool = "brush"; // current tool, default is "brush"
 M.curtheme = 0; // index of the current theme
 M.curtemplate = ""; // url of the current template or empty string if none
 M.backtool = ""; // tool to come back to after a template picker et c.
-M.bgcolor = [0.8, 0.8, 0.8, 1.0]; // background color
-M.fgcolor = [0.0, 0.3, 0.7, 1.0]; // foreground color
+M.bgcolor = [1.0, 1.0, 1.0, 1.0]; // background color
+M.fgcolor = [60 / 255, 77 / 255, 183 / 255, 1.0]; // foreground color
 
 M.sh.fit = twgl.createProgramInfo(gl, ["vs_fit", "fs_fit"]); // build fit shader
 M.sh.brush = twgl.createProgramInfo(gl, ["vs_brush", "fs_brush"]); // draws disk
@@ -125,15 +133,15 @@ M.ondragend = function() {
 $('#c').bind('udragstart.udrag',	M.ondragstart)
 	.bind('udragmove.udrag',	M.ondragmove)
 	.bind('udragend.udrag',		M.ondragend);
-$('#c').bind('touchstart mousedown', function(e) {
-	e.preventDefault();
+$('#c').on('utap', function(e) {
+	//e.preventDefault();
 	if(M.curtool == "bucket") {
-		M.dobucket([e.originalEvent.clientX - M.c.offset().left,
-		M.bg.height - (e.originalEvent.clientY - M.c.offset().top)]);
+		M.dobucket([e.px_current_x - M.c.offset().left,
+		M.bg.height - (e.px_current_y - M.c.offset().top)]);
 		return;
 	}
-	M.addbrushnode([e.originalEvent.clientX - M.c.offset().left,
-		e.originalEvent.clientY - M.c.offset().top]);
+	M.addbrushnode([e.px_current_x - M.c.offset().left,
+		e.px_current_y - M.c.offset().top]);
 	if(!M.renderpending) {
 		M.renderpending = true;
 		requestAnimationFrame(render);
@@ -168,6 +176,9 @@ M.settemplate = function() {
 	if(!M.curtemplate) {
 		return;
 	}
+	// clear the M.arrays:
+	M.arrays.position.data = [];
+	M.arrays.texcoord.data = [];
 	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 	if(M.textures.template) { // delete previous template texture from RAM
 		gl.deleteTexture(M.textures.template);
@@ -185,9 +196,9 @@ M.settemplate = function() {
 	});
 };
 
-// this function is called when a colorbtn is clicked
-M.oncolorchange = function() {
-	M.btnswitch("color");
+// this function is called when a thickbtn is clicked
+M.onthickchange = function() {
+	M.btnswitch("thick");
 	var hinge = $("#pickerhinge");
 	hinge.empty();
 	var div = $("<div>").attr("id", "pickerwrap").click(function() {
@@ -210,32 +221,51 @@ M.oncolorchange = function() {
 		vtoolbar.append(btn);
 	}
 	div.append(vtoolbar);
+};
+
+// this function is called when a colorbtn is clicked
+M.oncolorchange = function() {
+	M.btnswitch("color");
+	var hinge = $("#pickerhinge");
+	hinge.empty();
+	var div = $("<div>").attr("id", "pickerwrap").click(function() {
+		M.ontemplatepick(); // close on click outside of any button
+	});
+	hinge.append(div);
 
 	var q = 1 / 255;
-	for(var i = 0; i < 256; i += 51) {
-		for(var j = 0; j < 256; j += 51) {
-			for(var k = 0; k < 256; k += 51) {
-				var color = "rgba(" + i + "," + j
-					+ "," + k + ",1)";
-				var fgcolor = [i * q, j * q, k * q, 1.0];
-				var btn = $("<div>").addClass("swatchbtn")
-					.data("fgcolor", fgcolor)
-					.css("background-color", color)
-					.click(function() {
-						var fgcolor = $(this).data(
-							"fgcolor");
-						M.fgcolor[0] = fgcolor[0];
-						M.fgcolor[1] = fgcolor[1];
-						M.fgcolor[2] = fgcolor[2];
-						M.fgcolor[3] = fgcolor[3];
-						requestAnimationFrame(render);
-						M.commit();
-					});
-				div.append(btn);
-			}
+	for(var i = 0; i < M.palette.length; ++i) {
+		var color = "rgba(" + M.palette[i][0] + "," + M.palette[i][1] +
+			"," + M.palette[i][2] + ",1)";
+		var fgcolor = [M.palette[i][0] * q, M.palette[i][1] * q,
+			M.palette[i][2] * q, 1.0];
+		var btn = $("<div>").addClass("swatchbtn")
+			.data("fgcolor", fgcolor) // foregroun color as floats
+			.data("palind", i) // palette index
+			.css("background-color", color)
+			.click(M.oncolorpick);
+		div.append(btn);
+		if(M.curpal == i) {
+			btn.html("&#x2714;");
+		}
+		if((i % 5) == 4) {
+			div.append($("<div style='clear: both'></div>"));
 		}
 	}
 };
+
+// color picked, apply change:
+M.oncolorpick = function() {
+	M.commit();
+	var fgcolor = $(this).data("fgcolor");
+	M.fgcolor = fgcolor;
+	M.curpal = 1 * $(this).data("palind");
+	requestAnimationFrame(render);
+};
+
+M.thickbtn.click(function() {
+	M.onthickchange();
+});
 
 M.colorbtn.click(function() {
 	M.oncolorchange();
@@ -298,7 +328,7 @@ $("#eraserbtn").click(function() {
 	M.commit();
 	M.btnswitch("eraser");
 	$("#pickerhinge").empty();
-}); 
+});
 
 $("#clearbtn").click(function() {
 	M.doclear();
@@ -498,7 +528,10 @@ function render() {
 				Math.round(M.fgcolor[1] * 255) + ", " +
 				Math.round(M.fgcolor[2] * 255) + ", " +
 				Math.round(M.fgcolor[3] * 255) + ") ";
-	M.colorbtn.css("background-image", brushcss(M.brr, M.fgcolor, M.bgcolor));
+	M.thickbtn.css(
+		"background-image", brushcss(M.brr, M.fgcolor, M.bgcolor));
+	M.colorbtn.css({"background-color": bcolor,
+		"background-image": "none"});
 
 	M.renderpending = false;
 	// display the background:
@@ -530,9 +563,11 @@ function drawfg() {
 
 	if(M.curtool == "eraser") {
 		uniforms = {
-			texture: M.textures["template"],
-			sres: M.texmeta["template"],
 			dres: [M.bg.width, M.bg.height]
+		}
+		if(M.texmeta["template"]) {
+			uniforms.sres = M.texmeta["template"];
+			uniforms.texture = M.textures["template"];
 		}
 		gl.useProgram(M.sh.eraser.program);
 		twgl.setBuffersAndAttributes(gl, M.sh.eraser, bufinfo);
@@ -550,6 +585,6 @@ function drawfg() {
 	twgl.drawBufferInfo(gl, gl.TRIANGLES, bufinfo);
 }
 
-//requestAnimationFrame(render);
+requestAnimationFrame(render);
 
 })(jQuery);
