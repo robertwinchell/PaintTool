@@ -9,14 +9,21 @@ var M = Paint; // a shortcut for this module
 
 M.sh = {}; // all shaderinfo objects in one place
 
-M.stroke = []; // array of current strokes to display
-M.arrays = { position: {  // arrays of triangles to draw using brush
-		numComponents: 2, data: []
-	},
+// brush strokes consist of array of disks and links between disks
+M.stroke = {disk: { position: {
+	numComponents: 2, data: [] },
 	texcoord: {
-		numComponents: 2, data: []
+	numComponents: 2, data: [] }},
+	link: { position: {
+	numComponents: 2, data: [] }},
+	lastnode: null, // x,y coords in pixel of last node
+	clear: function() {
+		M.stroke.disk.position.data = [];
+		M.stroke.disk.texcoord.data = [];
+		M.stroke.link.position.data = [];
+		M.stroke.lastnode = null;
 	}
-};
+}
 
 M.renderpending = false; // true if render already pending, reset during render
 
@@ -54,7 +61,9 @@ M.fgcolor = [60 / 255, 77 / 255, 183 / 255, 1.0]; // foreground color
 
 M.sh.fit = twgl.createProgramInfo(gl, ["vs_fit", "fs_fit"]); // build fit shader
 M.sh.brush = twgl.createProgramInfo(gl, ["vs_brush", "fs_brush"]); // draws disk
+M.sh.brlink = twgl.createProgramInfo(gl, ["vs_brlink", "fs_brlink"]); // link
 M.sh.eraser = twgl.createProgramInfo(gl, ["vs_eraser", "fs_eraser"]); // eraser
+M.sh.erlink = twgl.createProgramInfo(gl, ["vs_erlink", "fs_erlink"]); // er.link
 
 // buffer to draw a square:
 var arrays = {
@@ -64,6 +73,7 @@ M.bufinfo = twgl.createBufferInfoFromArrays(gl, arrays);
 
 M.texmeta = {}; // width and height of each source image will be stored here
 M.textures = {};
+
 /*
 M.textures = twgl.createTextures(gl, {
 	// cherry
@@ -94,7 +104,7 @@ M.addbrushnode = function(pos) {
 	pos[1] = gl.canvas.height * 0.5 - pos[1]; // invert Y
 	var ratio = [2 / gl.canvas.width, 2 / gl.canvas.height];
 //	var glpos = [pos[0] / gl.canvas.width, pos[1] / gl.canvas.height];
-	M.arrays.position.data.push(
+	M.stroke.disk.position.data.push(
 		(pos[0] - M.brr) * ratio[0],
 		(pos[1] - M.brr) * ratio[1],
 		(pos[0] + M.brr) * ratio[0],
@@ -109,7 +119,39 @@ M.addbrushnode = function(pos) {
 		(pos[0] + M.brr) * ratio[0],
 		(pos[1] + M.brr) * ratio[1]
 	);
-	M.arrays.texcoord.data.push(0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1);
+	M.stroke.disk.texcoord.data.push(0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1);
+	// add link between two disks:
+	while(M.stroke.lastnode !== null) {
+		var x0 = M.stroke.lastnode[0];
+		var y0 = M.stroke.lastnode[1];
+		var x1 = pos[0];
+		var y1 = pos[1];
+		var dx = x1 - x0;
+		var dy = y1 - y0;
+		if(Math.abs(dx) < 2 && Math.abs(dy) < 2) {
+			break;
+		}
+		var R = Math.sqrt(dx * dx + dy * dy);
+		var ox = dx * M.brr / R;
+		var oy = dy * M.brr / R;
+		M.stroke.link.position.data.push(
+			(x0 - oy) * ratio[0],
+			(y0 + ox) * ratio[1],
+			(x1 - oy) * ratio[0],
+			(y1 + ox) * ratio[1],
+			(x1 + oy) * ratio[0],
+			(y1 - ox) * ratio[1],
+
+			(x0 - oy) * ratio[0],
+			(y0 + ox) * ratio[1],
+			(x1 + oy) * ratio[0],
+			(y1 - ox) * ratio[1],
+			(x0 + oy) * ratio[0],
+			(y0 - ox) * ratio[1]
+		);
+		break;
+	}
+	M.stroke.lastnode = [pos[0], pos[1]];
 };
 
 M.ondragstart = function(e) {
@@ -119,15 +161,25 @@ M.ondragmove = function(e) {
 	if(M.curtool == "bucket") {
 		return;
 	}
-	M.addbrushnode([e.px_current_x - M.c.offset().left,
-		e.px_current_y - M.c.offset().top]);
+	M.addbrushnode([e.px_current_x - M.c.offset().left +
+		$("html, body").scrollLeft(),
+		e.px_current_y - M.c.offset().top +
+		$("html, body").scrollTop()]);
 	if(!M.renderpending) {
 		M.renderpending = true;
 		requestAnimationFrame(render);
 	}
 };
 
-M.ondragend = function() {
+M.ondragend = function(e) {
+	M.stroke.lastnode = null;
+	if(M.curtool == "bucket") {
+		M.dobucket([e.px_current_x - M.c.offset().left +
+			$("html, body").scrollLeft(),
+		M.bg.height - (e.px_current_y - M.c.offset().top +
+			$("html, body").scrollTop())]);
+		return;
+	}
 };
 
 $('#c').bind('udragstart.udrag',	M.ondragstart)
@@ -135,13 +187,18 @@ $('#c').bind('udragstart.udrag',	M.ondragstart)
 	.bind('udragend.udrag',		M.ondragend);
 $('#c').on('utap', function(e) {
 	//e.preventDefault();
+	console.log("Tap " + e.px_current_x);
 	if(M.curtool == "bucket") {
-		M.dobucket([e.px_current_x - M.c.offset().left,
-		M.bg.height - (e.px_current_y - M.c.offset().top)]);
+		M.dobucket([e.px_current_x - M.c.offset().left +
+			$("html, body").scrollLeft(),
+		M.bg.height - (e.px_current_y - M.c.offset().top +
+			$("html, body").scrollTop())]);
 		return;
 	}
-	M.addbrushnode([e.px_current_x - M.c.offset().left,
-		e.px_current_y - M.c.offset().top]);
+	M.addbrushnode([e.px_current_x - M.c.offset().left +
+			$("html, body").scrollLeft(),
+		e.px_current_y - M.c.offset().top +
+			$("html, body").scrollTop()]);
 	if(!M.renderpending) {
 		M.renderpending = true;
 		requestAnimationFrame(render);
@@ -177,8 +234,7 @@ M.settemplate = function() {
 		return;
 	}
 	// clear the M.arrays:
-	M.arrays.position.data = [];
-	M.arrays.texcoord.data = [];
+	M.stroke.clear();
 	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 	if(M.textures.template) { // delete previous template texture from RAM
 		gl.deleteTexture(M.textures.template);
@@ -225,6 +281,7 @@ M.onthickchange = function() {
 
 // this function is called when a colorbtn is clicked
 M.oncolorchange = function() {
+	M.commit();
 	M.btnswitch("color");
 	var hinge = $("#pickerhinge");
 	hinge.empty();
@@ -256,7 +313,6 @@ M.oncolorchange = function() {
 
 // color picked, apply change:
 M.oncolorpick = function() {
-	M.commit();
 	var fgcolor = $(this).data("fgcolor");
 	M.fgcolor = fgcolor;
 	M.curpal = 1 * $(this).data("palind");
@@ -386,32 +442,46 @@ function tex2bg(texname) {
 
 // flatten image by committing all the brushstrokes to the background fb:
 M.commit = function() {
-	var bufinfo = twgl.createBufferInfoFromArrays(gl, M.arrays);
-
 	gl.enable(gl.BLEND);
 	gl.disable(gl.DEPTH_TEST);
 	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 	twgl.bindFramebufferInfo(gl, M.bg);
 	drawfg();
-	// clear the M.arrays:
-	M.arrays.position.data = [];
-	M.arrays.texcoord.data = [];
+	// clear the M.stroke:
+	M.stroke.clear();
 };
 
 M.doclear = function() {
-//	twgl.bindFramebufferInfo(gl, M.bg);
-//	gl.clearColor(M.bgcolor[0], M.bgcolor[1], M.bgcolor[2], M.bgcolor[3]);
-//	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT |
-//						gl.STENCIL_BUFFER_BIT);
-	// clear the M.arrays:
-	M.arrays.position.data = [];
-	M.arrays.texcoord.data = [];
+	// clear the M.stroke:
+	M.stroke.clear();
 
-	// bring back template image:
-	tex2bg("template");
+	if(!M.textures["template"]) {
+		twgl.bindFramebufferInfo(gl, M.bg);
+		gl.clearColor(M.bgcolor[0], M.bgcolor[1], M.bgcolor[2],
+								M.bgcolor[3]);
+		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT |
+						gl.STENCIL_BUFFER_BIT);
+	} else {
+		// bring back template image:
+		tex2bg("template");
+	}
 
 	requestAnimationFrame(render);
 };
+
+// returns true if similar colors
+function sc(c0, c1, o0, o1) {
+	var lambda = 5; // plus or minus lambda comsidered same color
+	o0 = o0? o0: 0;
+	o1 = o1? o1: 0;
+	if(Math.abs(c0[o0 + 0] - c1[o1 + 0]) < lambda &&
+		Math.abs(c0[o0 + 1] - c1[o1 + 1]) < lambda &&
+		Math.abs(c0[o0 + 2] - c1[o1 + 2]) < lambda &&
+		Math.abs(c0[o0 + 3] - c1[o1 + 3]) < lambda) {
+		return true;
+	}
+	return false;
+}
 
 M.dobucket = function(pos) {
 	// read pixels from background render buffer:
@@ -427,58 +497,47 @@ M.dobucket = function(pos) {
 		Math.floor(M.fgcolor[1] * 255),
 		Math.floor(M.fgcolor[2] * 255),
 		Math.floor(M.fgcolor[3] * 255)]; // new color
-	var oldc = [pixels[curp], pixels[curp + 1], pixels[curp + 2], 255];
-	if(newc[0] == oldc[0] && newc[1] == oldc[1] && newc[2] == oldc[2]) {
+	var oldc = [pixels[curp], pixels[curp + 1], pixels[curp + 2],
+			pixels[curp + 3]];
+	if(sc(newc, oldc)) {
 		return; // same colors: nothing to do
 	}
 	var st = []; // stack
 	var p1; // temp pos variable
 	var spanAbove;
 	var spanBelow;
-	st.push(curp); // put current position into the stac
+	st.push(curp); // put current position into the stack
 	while(st.length) {
 		p1 = st.pop();
 		// move to the left:
 //			console.log(pixels[p1], pixels[p1 + 1], pixels[p1 + 2],
 //				pixels[p1 + 3]);
-		while(((p1 + 4) % pw > 0) && pixels[p1] == oldc[0] &&
-				pixels[p1 + 1] == oldc[1] &&
-				pixels[p1 + 2] == oldc[2]) {
+		while(((p1 + 4) % pw > 0) && sc(pixels, oldc, p1)) {
 			p1 -= 4;
 		}
 		p1 += 4;
 		spanAbove = spanBelow = 0;
-		while(((p1 + 4) % pw > 0) && pixels[p1] == oldc[0] &&
-				pixels[p1 + 1] == oldc[1] &&
-				pixels[p1 + 2] == oldc[2]) {
+		while(((p1 + 4) % pw > 0) && sc(pixels, oldc, p1)) {
 			pixels[p1] = newc[0];
 			pixels[p1 + 1] = newc[1];
 			pixels[p1 + 2] = newc[2];
+			pixels[p1 + 3] = newc[3];
 
-//			console.log(p1);
 			if(!spanAbove && Math.floor(p1 / pw) > 0 &&
-				pixels[p1 - pw] == oldc[0] &&
-				pixels[p1 - pw + 1] == oldc[1] &&
-				pixels[p1 - pw + 2] == oldc[2]) {
+				sc(pixels, oldc, p1 - pw)) {
 				st.push(p1 - pw);
 				spanAbove = 1;
 			} else if(spanAbove && Math.floor(p1 / pw) > 0 &&
-				(pixels[p1 - pw] != oldc[0] ||
-				pixels[p1 - pw + 1] != oldc[1] ||
-				pixels[p1 - pw + 2] != oldc[2])) {
+				!sc(pixels, oldc, p1 - pw)) {
 				spanAbove = 0;
 			}
 			if(!spanBelow && Math.floor(p1 / pw) < (M.bg.height - 1)
-				&& pixels[p1 + pw] == oldc[0] &&
-				pixels[p1 + pw + 1] == oldc[1] &&
-				pixels[p1 + pw + 2] == oldc[2]) {
+				&& sc(pixels, oldc, p1 + pw)) {
 				st.push(p1 + pw);
 				spanBelow = 1;
 			} else if(spanBelow && Math.floor(p1 / pw) <
-					(M.bg.height - 1) &&
-				(pixels[p1 + pw] == oldc[0] ||
-				pixels[p1 + pw + 1] == oldc[1] ||
-				pixels[p1 + pw + 2] == oldc[2])) {
+							(M.bg.height - 1) &&
+				!sc(pixels, oldc, p1 + pw)) {
 				spanBelow = 0;
 			}
 			p1 += 4;
@@ -553,7 +612,8 @@ function render() {
 }
 
 function drawfg() {
-	var bufinfo = twgl.createBufferInfoFromArrays(gl, M.arrays);
+	var bufinfo = twgl.createBufferInfoFromArrays(gl, M.stroke.disk);
+	var buflink = twgl.createBufferInfoFromArrays(gl, M.stroke.link);
 
 	gl.enable(gl.BLEND);
 	gl.disable(gl.DEPTH_TEST);
@@ -572,6 +632,13 @@ function drawfg() {
 		gl.useProgram(M.sh.eraser.program);
 		twgl.setBuffersAndAttributes(gl, M.sh.eraser, bufinfo);
 		twgl.setUniforms(M.sh.eraser, uniforms);
+
+		twgl.drawBufferInfo(gl, gl.TRIANGLES, bufinfo);
+
+		gl.useProgram(M.sh.erlink.program);
+		twgl.setBuffersAndAttributes(gl, M.sh.erlink, buflink);
+		twgl.setUniforms(M.sh.erlink, uniforms);
+		twgl.drawBufferInfo(gl, gl.TRIANGLES, buflink);
 	} else {
 		uniforms = {
 			dres: [M.bg.width, M.bg.height],
@@ -580,9 +647,15 @@ function drawfg() {
 		gl.useProgram(M.sh.brush.program);
 		twgl.setBuffersAndAttributes(gl, M.sh.brush, bufinfo);
 		twgl.setUniforms(M.sh.brush, uniforms);
+
+		twgl.drawBufferInfo(gl, gl.TRIANGLES, bufinfo);
+
+		gl.useProgram(M.sh.brlink.program);
+		twgl.setBuffersAndAttributes(gl, M.sh.brlink, buflink);
+		twgl.setUniforms(M.sh.brlink, uniforms);
+		twgl.drawBufferInfo(gl, gl.TRIANGLES, buflink);
 	}
 
-	twgl.drawBufferInfo(gl, gl.TRIANGLES, bufinfo);
 }
 
 requestAnimationFrame(render);

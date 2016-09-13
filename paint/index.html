@@ -36,7 +36,8 @@
 	></canvas>
 <div id="pickerhinge"></div>
 </div>
-<div sty;e="clear: both"></div>
+<div style="clear: both"></div>
+<div id="debug"></div>
 </body>
 
 
@@ -165,6 +166,65 @@ void main() {
 }
 </script>
 
+<!-- eraser shader: eraser tool functionality -->
+<script id="vs_erlink" type="notjs">
+attribute vec4 position;
+attribute vec2 texcoord;
+varying vec2 texco; // texcoord to pass directly to the fragment shader
+varying vec2 bgpos; // pass position so that we know where to pick texture pixel
+void main() {
+	gl_Position = position;
+	texco = texcoord;
+	bgpos = position.xy;
+}
+</script>
+<script id="fs_erlink" type="notjs">
+precision mediump float;
+uniform sampler2D texture; // source texture that needs to be copied
+uniform vec2 sres; // texture's resolution
+uniform vec2 dres; // destination framebuffer resolution, or canvas size: xy
+varying vec2 texco; // texture coordinates
+varying vec2 bgpos; // position in openGL coordinates
+
+vec4 bgcolor = vec4(1.0, 1.0, 1.0, 1.0);
+
+void main() {
+	vec2 uv = texco; // we get brush texture coordinates passed from buffers
+	vec2 pos = vec2(uv.x - 0.5, uv.y - 0.5); // position of disk
+	float dist2 = dot(pos, pos); // square of distance
+
+	vec2 duv = (bgpos + 1.0) * 0.5; // framebuffer's uv (destination uv)
+	vec2 suv; // source texture's uv
+
+	float saspect = sres.x / sres.y;
+	float daspect = dres.x / dres.y;
+
+	vec4 color; // color of the pixel
+
+	if(saspect > daspect) {
+		suv.x = duv.x;
+		suv.y = duv.y * (saspect / daspect) +
+					(1.0 - (saspect / daspect)) * 0.5;
+		if(sres.x == 0.0 || suv.y < 0.0 || suv.y > 1.0) {
+			color = bgcolor;
+		} else {
+			color = texture2D(texture, suv);
+		}
+	} else {
+		suv.y = duv.y;
+		suv.x = duv.x * (daspect / saspect) +
+					(1.0 - (daspect / saspect)) * 0.5;
+		if(sres.x == 0.0 || suv.x < 0.0 || suv.x > 1.0) {
+			color = bgcolor;
+		} else {
+			color = texture2D(texture, suv);
+		}
+	}
+
+	gl_FragColor = vec4(mix(bgcolor, color, color.a).rgb, 1.0);
+}
+</script>
+
 <!-- brush shader: draws a disk -->
 <script id="vs_brush" type="notjs">
 attribute vec4 position;
@@ -193,6 +253,28 @@ void main() {
 	}
 }
 </script>
+
+<!-- brush link shader: draws a link between brush disks -->
+<script id="vs_brlink" type="notjs">
+attribute vec4 position;
+attribute vec2 texcoord;
+varying vec2 texco; // texcoord to pass directly to the fragment shader
+void main() {
+	gl_Position = position;
+	texco = texcoord;
+}
+</script>
+<script id="fs_brlink" type="notjs">
+precision mediump float;
+uniform vec2 dres; // destination framebuffer resolution, or canvas size: xy
+uniform vec4 fgcolor; // foreground color
+varying vec2 texco; // texture coordinates
+
+void main() {
+	gl_FragColor = fgcolor; //vec4(0.0, 0.3, .7, 1.0);
+}
+</script>
+
 
 <script src="jquery.js"></script>
 <script src="jquery.event.ue.js"></script>
