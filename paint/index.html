@@ -11,24 +11,74 @@
 </head>
 <body>
 <div class="toolbar">
-<div class="tbtn" id="templatesbtn">
-	<img src="assets/appleBtn.png"/></div>
-<div class="tbtn selected" id="brushbtn">
-	<img src="assets/button_brush.png"/></div>
-<div class="tbtn" id="bucketbtn">
-	<img src="assets/button_fill.png"/></div>
-<div class="tbtn" id="eraserbtn">
-	<img src="assets/button_eraser.png"/></div>
-<div class="tbtn" id="clearbtn">
-	<img src="assets/button_eraseAll.png"/></div>
-<div class="tbtn" id="openbtn">
-	<label for="finput">
-		<img src="assets/button_load.png"/>
-	</label>
-	<input type="file" id="finput" /></div>
-<div class="tbtn" id="thickbtn"></div>
-<div class="tbtn" id="colorbtn">
-	<img src="assets/colorWheel.png"/></div>
+
+  <!-- select color and line width -->
+  <div class="buttonGroup">
+      <div class="tbtn" id="colorbtn">
+          <img src="assets/colorWheel.png"/>
+          <p>Color</p>
+      </div>
+      <div class="tbtn" id="thickbtn"><p>Line Width</p></div>
+  </div>
+  
+  <!-- select brush or fill -->
+  <div class="buttonGroup">
+      <div class="tbtn" id="bucketbtn">
+          <img src="assets/button_fill.png"/>
+          <p>Fill</p> 
+      </div>
+      <div class="tbtn selected" id="brushbtn">
+          <img src="assets/button_brush.png"/>
+          <p>Brush</p>           
+      </div>
+  </div>
+  
+  <!-- clear, either erase or remove everything, undo would be good here -->
+  <div class="buttonGroup">
+      <div class="tbtn" id="undobtn">
+          <img src="assets/button_undo.png"/>
+          <p>Undo</p>              
+      </div>      
+      
+      <div class="tbtn" id="eraserbtn">
+          <img src="assets/button_eraser.png"/>
+          <p>Erase a little</p>              
+      </div>
+  
+      <div class="tbtn" id="clearbtn">
+          <img src="assets/button_eraseAll.png"/>
+          <p>Erase All</p>              
+      </div>
+
+  </div>
+</div>
+
+<div class="toolbarRight">
+  <div class="buttonGroup">
+    <div class="tbtn" id="templatesbtn">
+        <img src="assets/button_template.png"/>
+        <p>Templates</p>
+    </div>
+  
+    <!-- retrieve -->
+    <div class="tbtn" id="openbtn">
+        <label for="finput">
+            <img src="assets/button_open.png"/>
+            <p>Open</p>
+        </label>
+        <input type="file" id="finput" />
+    </div>
+
+    <!-- save -->
+    <div class="tbtn" id="openbtn">
+        <label for="finput">
+            <img src="assets/button_save.png"/>
+            <p>Save</p>
+        </label>
+        <input type="file" id="finput" />
+    </div>
+
+  </div>
 </div>
 
 <div id="canvaswrap">

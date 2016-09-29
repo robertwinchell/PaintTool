@@ -39,16 +39,63 @@ M.thickbtn = $("#thickbtn");
 M.colorbtn = $("#colorbtn");
 M.curpal = 9; // current palette element
 M.palette = [
-	[254,133,236],[253,232,169],[187,140,122],[117,210,254],[255,126,112],
-	[246,64, 43], [236,19, 97], [155,27, 176],[103,51, 187],[60, 77, 183],
-	[67, 174,80], [0,  150,135],[1,  186,214],[1,  166,246],[15, 147,245],
-	[136,196,64], [204,221,29], [255,236,22], [254,194,0],  [255,153,0],
-	[0,  0,  0],  [93, 125,138],[157,157,157],[121,85, 71], [255,84, 5]];
+	// purple
+	[103,51,187],
+	[145,95,225],
+	[201,171,249],
+	
+	// violet	
+	[155,27,176],
+	[201,85,220],
+	[235,162,247],
+	
+	// red
+	[252,5,28], 	
+	[238,94,146],
+	[246,160,191],	
+	
+	// orange
+	[246,64,43], 
+	[255,84,5],
+	[253,150,139],
+
+	// yellow/gold
+	[255,153,0], 
+	[254,194,0], 
+	[247,235,96], 
+ 
+ 	// green
+	[67,174,80],
+	[136,196,64],
+	[204,221,29],
+	
+	// teal
+	[0,150,135],
+	[60,192,179],
+	[133,233,223],	
+
+	// blue
+	[60,77,183],
+	[15,147,245],
+	[121,209,252],
+	
+
+	// brown
+	[121,85,71], 
+	[187,140,122],
+	[253,232,169],
+
+	// black/gray
+	[0,0,0],
+	[157,157,157],
+	[255,255,255]
+
+	];
 
 M.theme = [["Animals", "animals"], ["Lifestyle", "lifestyle"],
-		["Mandalas", "mandalas"], ["Mazes & Themes", "mazeTheme"],
-		["Nature & Landscapes", "natureLand"],
-		["Religious & Holidays", "relandhol"]];
+		["Mandalas", "mandalas"], ["Mazes & <br >Themes", "mazeTheme"],
+		["Nature & <br >Landscapes", "natureLand"],
+		["Religious & <br >Holidays", "relandhol"]];
 
 M.radii = [1, 2, 3, 4, 5, 8, 10, 15, 20, 30];
 M.brr = 5; // brush radius in pixels
@@ -257,16 +304,18 @@ M.onthickchange = function() {
 	M.btnswitch("thick");
 	var hinge = $("#pickerhinge");
 	hinge.empty();
-	var div = $("<div>").attr("id", "pickerwrap").click(function() {
+//	var div = $("<div>").attr("id", "pickerwrap").click(function() {
+	var div = $("<div>").attr("id", "lineThickness").click(function() {
 		M.ontemplatepick(); // close on click outside of any button
 	});
 	hinge.append(div);
+	
 	// create a vertical toolbar for brush thinckness buttons:
-	var vtoolbar = $("<div>").addClass("vtoolbar")
-		.css("margin-left", "40px");
+	var vtoolbar = $("<div>").addClass("vtoolbar thick");
+//		.css("margin-left", "20px");   
 	for(var i = 0; i < 9; ++i) {
 		var radius = M.radii[i];
-		var btn = $("<div>").addClass("tbtn")
+		var btn = $("<div>").addClass("tbtn thick")
 			.css("background-image",
 				 brushcss(radius, M.fgcolor, M.bgcolor))
 			.data("brr", radius)
@@ -305,7 +354,7 @@ M.oncolorchange = function() {
 		if(M.curpal == i) {
 			btn.html("&#x2714;");
 		}
-		if((i % 5) == 4) {
+		if((i % 6) == 5) {  // (i % 5)  == 4
 			div.append($("<div style='clear: both'></div>"));
 		}
 	}
@@ -348,8 +397,12 @@ M.onthemechange = function() {
 		}
 		subtoolbar.append(btn);
 	}
+
+//	subtoolbar.append($("<div>").addClass("closebtn")
+//			.append("<div class='btntext'>X</div>"));  ca 9/27
 	subtoolbar.append($("<div>").addClass("closebtn")
-			.append("<div class='btntext'>X</div>"));
+			.append("<div class='btntext'>Close<br />Templates</div>"));
+
 	div.append(subtoolbar);
 	div.append($("<div style='clear: both'></div>"));
 	for(var i = 0; i < 24; ++i) {
@@ -565,14 +618,15 @@ M.dobucket = function(pos) {
 
 function brushcss(radius, fgcolor, bgcolor) {
 	var fcolor = "rgba(" + Math.round(fgcolor[0] * 255) + "," +
-				Math.round(fgcolor[1] * 255) + "," +
-				Math.round(fgcolor[2] * 255) + "," +
-				Math.round(fgcolor[3]) + ") ";
+				           Math.round(fgcolor[1] * 255) + "," +
+				           Math.round(fgcolor[2] * 255) + "," +
+			  	           Math.round(fgcolor[3]) + ") ";
 	var bcolor = "rgba(" + Math.round(bgcolor[0] * 255) + "," +
-				Math.round(bgcolor[1] * 255) + "," +
-				Math.round(bgcolor[2] * 255) + "," +
-				Math.round(bgcolor[3]) + ") ";
-	return ("linear-gradient(-45deg, " +
+				           Math.round(bgcolor[1] * 255) + "," +
+				           Math.round(bgcolor[2] * 255) + "," +
+				           Math.round(bgcolor[3]) + ") ";
+    // ca 9/27 was -45deg
+	return ("linear-gradient(90deg, " +
 		bcolor + "0px, " +
 		bcolor + (53 - radius) + "px, " +
 		fcolor + (53 - radius) + "px, " +
@@ -584,11 +638,13 @@ function brushcss(radius, fgcolor, bgcolor) {
 function render() {
 	// update picker button which also serves as an indicator of brush:
 	var bcolor = "rgba(" + Math.round(M.fgcolor[0] * 255) + ", " +
-				Math.round(M.fgcolor[1] * 255) + ", " +
-				Math.round(M.fgcolor[2] * 255) + ", " +
-				Math.round(M.fgcolor[3] * 255) + ") ";
+				           Math.round(M.fgcolor[1] * 255) + ", " +
+				           Math.round(M.fgcolor[2] * 255) + ", " +
+				           Math.round(M.fgcolor[3] * 255) + ") ";
+
 	M.thickbtn.css(
 		"background-image", brushcss(M.brr, M.fgcolor, M.bgcolor));
+//		"background-image", brushcss(M.brr, M.fgcolor, M.bgcolor));
 	M.colorbtn.css({"background-color": bcolor,
 		"background-image": "none"});
 
