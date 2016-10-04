@@ -27,7 +27,8 @@ M.stroke = {disk: { position: {
 
 M.renderpending = false; // true if render already pending, reset during render
 
-var gl = twgl.getWebGLContext(document.getElementById("c"));
+var gl = twgl.getWebGLContext(document.getElementById("c"),
+	{preserveDrawingBuffer: true});
 M.c = $("#c"); // canvas in jquery format
 M.templatesbtn = $("#templatesbtn");
 M.brushbtn = $("#brushbtn");
@@ -121,16 +122,6 @@ M.bufinfo = twgl.createBufferInfoFromArrays(gl, arrays);
 M.texmeta = {}; // width and height of each source image will be stored here
 M.textures = {};
 
-/*
-M.textures = twgl.createTextures(gl, {
-	// cherry
-//	cherry: { src: "img.jpg", mag: gl.LINEAR }
-//	cherry: { src: "xl.png", mag: gl.LINEAR }
-	cherry: { src: "assets/animals/1.png", mag: gl.LINEAR }
-//	cherry: { src: "img.png", mag: gl.LINEAR }
-}, moretex);
-*/
-
 //gl.bindTexture(gl.TEXTURE_2D, M.textures.cherry);
 gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); // flip texture vertically
 
@@ -202,6 +193,8 @@ M.addbrushnode = function(pos) {
 };
 
 M.ondragstart = function(e) {
+	$("#pickerhinge").empty();
+	M.commit();
 };
 
 M.ondragmove = function(e) {
@@ -234,7 +227,6 @@ $('#c').bind('udragstart.udrag',	M.ondragstart)
 	.bind('udragend.udrag',		M.ondragend);
 $('#c').on('utap', function(e) {
 	//e.preventDefault();
-	console.log("Tap " + e.px_current_x);
 	if(M.curtool == "bucket") {
 		M.dobucket([e.px_current_x - M.c.offset().left +
 			$("html, body").scrollLeft(),
@@ -242,6 +234,8 @@ $('#c').on('utap', function(e) {
 			$("html, body").scrollTop())]);
 		return;
 	}
+	M.commit();
+	$("#pickerhinge").empty();
 	M.addbrushnode([e.px_current_x - M.c.offset().left +
 			$("html, body").scrollLeft(),
 		e.px_current_y - M.c.offset().top +
@@ -281,7 +275,8 @@ M.settemplate = function() {
 		return;
 	}
 	// clear the M.arrays:
-	M.stroke.clear();
+	M.doclear();
+//	M.stroke.clear();
 	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 	if(M.textures.template) { // delete previous template texture from RAM
 		gl.deleteTexture(M.textures.template);
@@ -301,6 +296,7 @@ M.settemplate = function() {
 
 // this function is called when a thickbtn is clicked
 M.onthickchange = function() {
+	M.commit();
 	M.btnswitch("thick");
 	var hinge = $("#pickerhinge");
 	hinge.empty();
@@ -309,7 +305,6 @@ M.onthickchange = function() {
 		M.ontemplatepick(); // close on click outside of any button
 	});
 	hinge.append(div);
-	
 	// create a vertical toolbar for brush thinckness buttons:
 	var vtoolbar = $("<div>").addClass("vtoolbar thick");
 //		.css("margin-left", "20px");   
@@ -401,7 +396,7 @@ M.onthemechange = function() {
 //	subtoolbar.append($("<div>").addClass("closebtn")
 //			.append("<div class='btntext'>X</div>"));  ca 9/27
 	subtoolbar.append($("<div>").addClass("closebtn")
-			.append("<div class='btntext'>Close<br />Templates</div>"));
+		.append("<div class='btntext'>Close<br />Templates</div>"));
 
 	div.append(subtoolbar);
 	div.append($("<div style='clear: both'></div>"));
@@ -431,6 +426,14 @@ $("#bucketbtn").click(function() {
 	M.commit();
 	M.btnswitch("bucket");
 	$("#pickerhinge").empty();
+});
+
+$("#undobtn").click(function() {
+	M.stroke.clear();
+	if(!M.renderpending) {
+		M.renderpending = true;
+		requestAnimationFrame(render);
+	}
 });
 
 $("#eraserbtn").click(function() {
@@ -469,6 +472,12 @@ $("#finput").change(function() {
 		};
 		reader.readAsDataURL(this.files[0]);
 	}
+});
+
+$("#saveas").click(function() {
+	var img = M.c[0].toDataURL("image/png")
+		.replace("image/png", "image/octet-stream");
+	this.href = img;
 });
 
 // create framebuffers:
