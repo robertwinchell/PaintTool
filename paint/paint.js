@@ -7,6 +7,30 @@ function Paint() {
 
 var M = Paint; // a shortcut for this module
 
+M.Action = function() {
+	this.cmd = 0; // where 0=keyframe, 1=erase, 2=brush, 3=fill
+	this.data = {pal: 21, brr: 5}; // data to be used to execute the command
+	this.prev = null; // previous action (if any)
+	this.next = null; // next action (if any)
+};
+
+// Stroke class is used for brush strokes and for eraser strokes (cmd = 1 or 2)
+// TODO: implement adding strokes to actions
+M.Stroke = function() {
+	this.pal = 0; // palette index for this stroke
+	this.brr = 5; // brush radius for this stroke
+	this.disk = { position: { numComponents: 2, data: [] },
+		texcoord: { numComponents: 2, data: [] }};
+	this.link = { position: { numComponents: 2, data: [] }};
+	this.lastnode = null; // x,y coords in pixel of last node
+	this.clear = function() {
+		this.disk.position.data = [];
+		this.disk.texcoord.data = [];
+		this.link.position.data = [];
+		this.lastnode = null;
+	};
+};
+
 M.sh = {}; // all shaderinfo objects in one place
 
 // brush strokes consist of array of disks and links between disks
@@ -25,6 +49,12 @@ M.stroke = {disk: { position: {
 	}
 }
 
+// array of Actions
+M.firstaction = new M.Action(); // first action in the history list
+M.lastaction = M.firstaction; // last action in the history list
+M.curaction = M.lastaction; // current action, different when back btn pressed
+M.maxkeyframes = 3; // maxumum keyframes in the history list
+
 M.renderpending = false; // true if render already pending, reset during render
 
 var gl = twgl.getWebGLContext(document.getElementById("c"),
@@ -38,60 +68,29 @@ M.clearbtn = $("#clearbtn");
 M.openbtn = $("#openbtn");
 M.thickbtn = $("#thickbtn");
 M.colorbtn = $("#colorbtn");
-M.curpal = 9; // current palette element
+M.curpal = 21; // current palette element
 M.palette = [
 	// purple
-	[103,51,187],
-	[145,95,225],
-	[201,171,249],
-	
-	// violet	
-	[155,27,176],
-	[201,85,220],
-	[235,162,247],
-	
+	[103,51,187],	[145,95,225],	[201,171,249],
+	// violet
+	[155,27,176],	[201,85,220],	[235,162,247],
 	// red
-	[252,5,28], 	
-	[238,94,146],
-	[246,160,191],	
-	
+	[252,5,28],	[238,94,146],	[246,160,191],
 	// orange
-	[246,64,43], 
-	[255,84,5],
-	[253,150,139],
-
+	[246,64,43],	[255,84,5],	[253,150,139],
 	// yellow/gold
-	[255,153,0], 
-	[254,194,0], 
-	[247,235,96], 
- 
- 	// green
-	[67,174,80],
-	[136,196,64],
-	[204,221,29],
-	
+	[255,153,0],	[254,194,0],	[247,235,96],
+	// green
+	[67,174,80],	[136,196,64],	[204,221,29],
 	// teal
-	[0,150,135],
-	[60,192,179],
-	[133,233,223],	
-
+	[0,150,135],	[60,192,179],	[133,233,223],
 	// blue
-	[60,77,183],
-	[15,147,245],
-	[121,209,252],
-	
-
+	[60,77,183],	[15,147,245],	[121,209,252],
 	// brown
-	[121,85,71], 
-	[187,140,122],
-	[253,232,169],
-
+	[121,85,71],	[187,140,122],	[253,232,169],
 	// black/gray
-	[0,0,0],
-	[157,157,157],
-	[255,255,255]
-
-	];
+	[0,0,0],	[157,157,157],	[255,255,255]
+];
 
 M.theme = [["Animals", "animals"], ["Lifestyle", "lifestyle"],
 		["Mandalas", "mandalas"], ["Mazes & <br >Themes", "mazeTheme"],
@@ -307,15 +306,16 @@ M.onthickchange = function() {
 	hinge.append(div);
 	// create a vertical toolbar for brush thinckness buttons:
 	var vtoolbar = $("<div>").addClass("vtoolbar thick");
-//		.css("margin-left", "20px");   
+//		.css("margin-left", "20px");
 	for(var i = 0; i < 9; ++i) {
 		var radius = M.radii[i];
+		var bgcolor = (radius == M.brr)? [0.9, 0.9, 0.9, 1.0]:M.bgcolor;
 		var btn = $("<div>").addClass("tbtn thick")
 			.css("background-image",
-				 brushcss(radius, M.fgcolor, M.bgcolor))
+				 brushcss(radius, M.fgcolor, bgcolor))
 			.data("brr", radius)
 			.click(function() {
-				M.brr = $(this).data("brr");
+				M.brr = 1 * $(this).data("brr");
 				requestAnimationFrame(render);
 			});
 		vtoolbar.append(btn);
@@ -362,6 +362,12 @@ M.oncolorpick = function() {
 	M.curpal = 1 * $(this).data("palind");
 	requestAnimationFrame(render);
 };
+
+$("#newbtn").click(function() {
+	M.textures["template"] = undefined;
+	M.texmeta["template"] = undefined;
+	M.doclear();
+});
 
 M.thickbtn.click(function() {
 	M.onthickchange();
@@ -429,7 +435,37 @@ $("#bucketbtn").click(function() {
 });
 
 $("#undobtn").click(function() {
-	M.stroke.clear();
+	if(M.stroke.disk.position.data.length) {
+		M.stroke.clear();
+		requestAnimationFrame(render);
+		return;
+	}
+	// find previous keyframe:
+	while(M.curaction.prev) {
+		M.curaction = M.curaction.prev;
+		if(M.curaction.cmd === 0) {
+			break;
+		}
+	}
+	if(!M.curaction.data.tex) {
+		M.textures["template"] = undefined;
+		M.texmeta["template"] = undefined;
+		M.doclear();
+	} else {
+		// set keyframe texture to the background:
+		if(M.curaction.data.tex) {
+			M.textures.temp = M.curaction.data.tex;
+				M.texmeta.temp = M.curaction.data.texmeta;
+			tex2bg("temp");
+			M.textures.temp = undefined;
+			M.texmeta.temp = undefined;
+		}
+	}
+	// change color and thickness:
+	M.curpal = M.curaction.data.pal;
+	M.fgcolor = [M.palette[M.curpal][0] / 255, M.palette[M.curpal][1] / 255,
+			M.palette[M.curpal][2] / 255, 1.0];
+	M.brr = M.curaction.data.brr;
 	if(!M.renderpending) {
 		M.renderpending = true;
 		requestAnimationFrame(render);
@@ -511,6 +547,49 @@ M.commit = function() {
 	drawfg();
 	// clear the M.stroke:
 	M.stroke.clear();
+	// add keyframe action:
+	M.addkeyframe();
+};
+
+// add keyframe to actions:
+M.addkeyframe = function() {
+	var action = new M.Action();
+	action.cmd = 0; // keyframe
+	action.data = {pal: M.curpal, brr: M.brr,
+		tex: twgl.createTexture(gl, {
+			format: gl.RGBA,
+			mag: gl.NEAREST,
+			min: gl.NEAREST,
+			width: M.bg.width,
+			src: gl.canvas
+		}),
+		texmeta: [M.bg.width, M.bg.height]};
+	M.addaction(action);
+};
+
+// add action to action list:
+M.addaction = function(action) {
+	M.curaction.next = action; // link new action to the current action
+	action.prev = M.curaction; // back link
+	M.curaction = action; // advance current action pointer
+	M.lastaction = action; // the new action becomes the last action in list
+	// remove extra keyframes:
+	var kfcount = M.maxkeyframes;
+	var curaction = M.lastaction;
+	while(curaction && kfcount) {
+		if(curaction.cmd === 0) {
+			--kfcount;
+		}
+		curaction = curaction.prev;
+	}
+	if(curaction && curaction.next) {
+		M.firstaction = curaction.next;
+		curaction.next.prev = null;
+	}
+	while(curaction) {
+		curaction.next = null;
+		curaction = curaction.prev;
+	}
 };
 
 M.doclear = function() {
@@ -606,20 +685,28 @@ M.dobucket = function(pos) {
 		}
 	}
 
-	// put pixelx back by creating a texture and calling tex2bg()
+	// put pixels back by creating a texture and calling tex2bg()
 	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-	M.textures.temp = twgl.createTexture(gl, {
+
+	// add new action to the actions list
+	var action = new M.Action();
+	action.cmd = 0; // keyframe
+	action.data = {pal: M.curpal, brr: M.brr,
+		tex: twgl.createTexture(gl, {
 			format: gl.RGBA,
 			mag: gl.NEAREST,
 			min: gl.NEAREST,
 			width: M.bg.width,
 			src: pixels
-		}
-	);
-	M.texmeta.temp = [M.bg.width, M.bg.height];
+		}),
+		texmeta: [M.bg.width, M.bg.height]};
+	M.addaction(action);
+
+	M.textures.temp = action.data.tex;
+	M.texmeta.temp = action.data.texmeta;
 	tex2bg("temp");
 	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-	gl.deleteTexture(M.textures.temp);
+	//gl.deleteTexture(M.textures.temp);
 	M.textures.temp = undefined;
 	M.texmeta.temp = undefined;
 	requestAnimationFrame(render);
@@ -629,7 +716,7 @@ function brushcss(radius, fgcolor, bgcolor) {
 	var fcolor = "rgba(" + Math.round(fgcolor[0] * 255) + "," +
 				           Math.round(fgcolor[1] * 255) + "," +
 				           Math.round(fgcolor[2] * 255) + "," +
-			  	           Math.round(fgcolor[3]) + ") ";
+				           Math.round(fgcolor[3]) + ") ";
 	var bcolor = "rgba(" + Math.round(bgcolor[0] * 255) + "," +
 				           Math.round(bgcolor[1] * 255) + "," +
 				           Math.round(bgcolor[2] * 255) + "," +
@@ -647,9 +734,9 @@ function brushcss(radius, fgcolor, bgcolor) {
 function render() {
 	// update picker button which also serves as an indicator of brush:
 	var bcolor = "rgba(" + Math.round(M.fgcolor[0] * 255) + ", " +
-				           Math.round(M.fgcolor[1] * 255) + ", " +
-				           Math.round(M.fgcolor[2] * 255) + ", " +
-				           Math.round(M.fgcolor[3] * 255) + ") ";
+			           Math.round(M.fgcolor[1] * 255) + ", " +
+			           Math.round(M.fgcolor[2] * 255) + ", " +
+			           Math.round(M.fgcolor[3] * 255) + ") ";
 
 	M.thickbtn.css(
 		"background-image", brushcss(M.brr, M.fgcolor, M.bgcolor));
