@@ -1,3 +1,7 @@
+.tempHidden {
+	display: none !important;
+}
+
 .toolbar {
 	width: 85px;  /* ca 9/29 80px */
 	height: 650px;

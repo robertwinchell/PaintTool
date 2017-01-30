@@ -68,6 +68,7 @@ M.clearbtn = $("#clearbtn");
 M.openbtn = $("#openbtn");
 M.thickbtn = $("#thickbtn");
 M.colorbtn = $("#colorbtn");
+M.savebtn = $("#savebtn");
 M.curpal = 21; // current palette element
 M.palette = [
 	// purple
@@ -91,7 +92,10 @@ M.palette = [
 	// black/gray
 	[0,0,0],	[157,157,157],	[255,255,255]
 ];
+M.openbtn.addClass("tempHidden");
+M.savebtn.addClass("tempHidden");
 
+//tempHidden
 M.theme = [["Animals", "animals"], ["Lifestyle", "lifestyle"],
 		["Mandalas", "mandalas"], ["Mazes & <br >Themes", "mazeTheme"],
 		["Nature & <br >Landscapes", "natureLand"],
@@ -720,7 +724,7 @@ function brushcss(radius, fgcolor, bgcolor) {
 	var bcolor = "rgba(" + Math.round(bgcolor[0] * 255) + "," +
 				           Math.round(bgcolor[1] * 255) + "," +
 				           Math.round(bgcolor[2] * 255) + "," +
-				           Math.round(bgcolor[3]) + ") ";
+				           Math.round(bgcolor[3] * 0.0) + ") ";
     // ca 9/27 was -45deg
 	return ("linear-gradient(90deg, " +
 		bcolor + "0px, " +
