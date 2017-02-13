@@ -92,10 +92,10 @@ M.palette = [
 	// black/gray
 	[0,0,0],	[157,157,157],	[255,255,255]
 ];
+
 M.openbtn.addClass("tempHidden");
 M.savebtn.addClass("tempHidden");
 
-//tempHidden
 M.theme = [["Animals", "animals"], ["Lifestyle", "lifestyle"],
 		["Mandalas", "mandalas"], ["Mazes & <br >Themes", "mazeTheme"],
 		["Nature & <br >Landscapes", "natureLand"],
@@ -275,7 +275,7 @@ M.ontemplatepick = function() {
 M.settemplate = function() {
 	M.curtemplate = $(this).data("imgurl");
 	if(!M.curtemplate) {
-		return;
+		M.curtemplate = "assets/button_new.png";
 	}
 	// clear the M.arrays:
 	M.doclear();
@@ -368,9 +368,10 @@ M.oncolorpick = function() {
 };
 
 $("#newbtn").click(function() {
+	M.doclear();
 	M.textures["template"] = undefined;
 	M.texmeta["template"] = undefined;
-	M.doclear();
+	M.settemplate();
 });
 
 M.thickbtn.click(function() {
@@ -721,10 +722,10 @@ function brushcss(radius, fgcolor, bgcolor) {
 				           Math.round(fgcolor[1] * 255) + "," +
 				           Math.round(fgcolor[2] * 255) + "," +
 				           Math.round(fgcolor[3]) + ") ";
-	var bcolor = "rgba(" + Math.round(bgcolor[0] * 255) + "," +
+	var bcolor = "rgba(255, 255, 255, 0.0)"/* + Math.round(bgcolor[0] * 255) + "," +
 				           Math.round(bgcolor[1] * 255) + "," +
 				           Math.round(bgcolor[2] * 255) + "," +
-				           Math.round(bgcolor[3] * 0.0) + ") ";
+				           Math.round(bgcolor[3]) + ") ";*/
     // ca 9/27 was -45deg
 	return ("linear-gradient(90deg, " +
 		bcolor + "0px, " +
@@ -755,7 +756,7 @@ function render() {
 		texture: M.bg.attachments[0],
 		sres: [M.bg.width, M.bg.height],
 		dres: [gl.canvas.width, gl.canvas.height]
-	};
+		};
 	gl.useProgram(M.sh.fit.program);
 	twgl.setBuffersAndAttributes(gl, M.sh.fit, M.bufinfo);
 	twgl.setUniforms(M.sh.fit, uniforms);
@@ -813,6 +814,8 @@ function drawfg() {
 	}
 
 }
+
+M.settemplate();
 
 requestAnimationFrame(render);
 
