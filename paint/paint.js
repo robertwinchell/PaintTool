@@ -57,8 +57,23 @@ M.maxkeyframes = 3; // maxumum keyframes in the history list
 
 M.renderpending = false; // true if render already pending, reset during render
 
+// adjust canvas size
+window.canvas_height = $(window).height() - 20;
+window.canvas_width = $(window).width() - $(".toolbar").width() * 2.5;
+$("#c").attr({"width": window.canvas_width,
+		"height": window.canvas_height});
+//.css({"width": window.canvas_width,
+//		"height": window.canvas_height});
+
 var gl = twgl.getWebGLContext(document.getElementById("c"),
-	{preserveDrawingBuffer: true});
+	{preserveDrawingBuffer: true, antialias: true});
+
+// create framebuffers:
+M.bg = twgl.createFramebufferInfo(gl); // background buffer
+//M.fg = twgl.createFramebufferInfo(gl); // foreground buffer
+//M.fx[0] = twgl.createFramebufferInfo(gl); // first effects buffer
+//M.fx[1] = twgl.createFramebufferInfo(gl); // second effects buffer
+
 M.c = $("#c"); // canvas in jquery format
 M.templatesbtn = $("#templatesbtn");
 M.brushbtn = $("#brushbtn");
@@ -520,12 +535,6 @@ $("#saveas").click(function() {
 		.replace("image/png", "image/octet-stream");
 	this.href = img;
 });
-
-// create framebuffers:
-M.bg = twgl.createFramebufferInfo(gl); // background buffer
-//M.fg = twgl.createFramebufferInfo(gl); // foreground buffer
-//M.fx[0] = twgl.createFramebufferInfo(gl); // first effects buffer
-//M.fx[1] = twgl.createFramebufferInfo(gl); // second effects buffer
 
 function tex2bg(texname) {
 	if(!M.textures[texname]) {
