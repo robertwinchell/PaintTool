@@ -644,10 +644,10 @@ M.dobucket = function(pos) {
 	twgl.bindFramebufferInfo(gl, M.bg);
 	gl.readPixels(0, 0, M.bg.width, M.bg.height, gl.RGBA,
 						gl.UNSIGNED_BYTE, pixels);
-
 	// do the thing (Scanline Floodfill Algorithm With Stack):
 	var pw = M.bg.width * 4; // width in terms of pixel index
-	var curp = (pos[0] + M.bg.width * pos[1]) * 4; // current pixel index
+	var curp = Math.floor((Math.floor(pos[0]) +
+		M.bg.width * Math.floor(pos[1])) * 4); // current pixel index
 	var newc = [Math.floor(M.fgcolor[0] * 255),
 		Math.floor(M.fgcolor[1] * 255),
 		Math.floor(M.fgcolor[2] * 255),
