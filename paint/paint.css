@@ -11,11 +11,16 @@
 }
 /* new toolbar for right side because all of the buttons don't fit on the left ca 9/28 */
 .toolbarRight {
+	position: relative;
 	width: 85px; 
-	height: 650px;
+	height: 630px;
 	float: right;
-	margin-top: 451px;
 	text-align: center;
+}
+
+#docgroup {
+	position: absolute;
+	bottom: 0;
 }
 
 .vtoolbar {
