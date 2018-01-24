@@ -1,0 +1,170 @@
+.toolbar {
+	width: 80px;
+	height: 684px;
+	background: #888888;
+	float: left;
+	text-align: center;
+}
+
+.vtoolbar {
+	width: 80px;
+	height: 684px;
+	background: #888888;
+	float: left;
+	text-align: center;
+}
+
+.subtoolbar: {
+	height: 75px;
+	width: 942px;
+	background: #883333;
+	text-align: center;
+}
+
+.tbtn {
+	float: left;
+	display: inline-block;
+	background-color: #bbd2ea;
+	width: 75px;
+	height: 70px;
+	margin: 2px;
+	background-size: 75px 70px;
+	cursor: pointer;
+}
+
+.stbtn {
+	font-size: 24px;
+	padding: 0 4px 0 4px;
+	float: left;
+	display: flex;
+	align-items: center;
+	top: 50%;
+	vertical-align: middle;
+	background: #bbd2ea;
+	height: 70px;
+	margin: 2px;
+	max-width: 130px;
+	text-align: center;
+	cursor: pointer;
+}
+
+.swatchbtn {
+	float: left;
+	display: inline-block;
+	width: 40px;
+	height: 50px;
+	margin: 2px;
+}
+
+.closebtn {
+	font-size: 60px;
+	padding: 0 10px 0 10px;
+	float: left;
+	display: flex;
+	align-items: center;
+	top: 50%;
+	vertical-align: middle;
+	background: brown;
+	height: 70px;
+	margin: 2px;
+	max-width: 120px;
+	text-align: center;
+	cursor: pointer;
+	color: white;
+	font-weight: bold;
+}
+
+.minibtn {
+	background-color: #ffffaa;
+	float: left;
+	display: inline-box;
+	width: 135px;
+	height: 135px;
+	background-size: 135px 135px;
+	cursor: pointer;
+	margin: 10px 0 0 10px;
+}
+
+.minibtn:hover {
+	background-color: white;
+}
+
+.closebtn:hover {
+	color: yellow;
+}
+
+.closebtn:active {
+	background: yellow;
+	color: red;
+}
+
+.stbtn:hover {
+	background: blue;
+	color: white;
+}
+
+.stbtn:active {
+	background: yellow;
+	color: black;
+}
+
+#canvaswrap {
+	position: relative;
+	float: left;
+	display: inline-box;
+	width: 942px;
+}
+
+.tbtn:hover {
+	background-color: blue;
+}
+
+.tbtn:active {
+	background-color: yellow;
+}
+
+.tbtn.selected, .stbtn.selected {
+	background-color: #e1991a;
+	background-image: linear-gradient(#fdfa93, #e1991a);
+}
+
+.tbtn img {
+	width: 75px;
+	height: 70px;
+}
+
+.tbtn > input {
+	display: none;
+}
+
+#c {
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+#pickerhinge {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 0;
+	height: 0;
+	background: red;
+	z-index: 100;
+}
+
+#pickerwrap {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 942px;
+	height: 684px;
+	background: #666644;
+}
+
+@media screen and (max-width: 1060px) {
+	.toolbar {
+		height: 75px;
+		width: 942px;
+	}
+}

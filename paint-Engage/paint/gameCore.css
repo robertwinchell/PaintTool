@@ -1,0 +1,259 @@
+html,
+body {
+    padding: 0;
+    margin: 0;
+    font-family: 'Open Sans', sans-serif;
+    height: 100vh;
+}
+header {
+	border-bottom:1px solid #666666;
+	overflow:hidden;
+}
+header h1 {
+	float:left;
+	font-size:1.8em;  
+	text-align:left;
+	margin:.5em;
+	padding:0;	
+    font-weight: bold;	
+}
+header img.gameTitle {
+	float:left;
+	margin:1em 0 1em 1em;
+	padding:0;		
+}
+header img.logo {
+	float:right;
+    padding: .5em;
+    margin: 0;	
+	width:60px;		
+}
+section {
+	margin: 0 1em;	
+}
+header.instructions h1 {
+	margin:.9em .5em;	
+}
+.instructions p {
+	padding:.5em 1em;	
+	font-size:1.2em;
+}
+h3 {
+	font-size:1.7em;
+	text-align:left;
+	margin:0 0 0 0; 
+	padding:0;	
+	font-weight:normal;
+}
+
+.main.settings {
+	width:96%; 
+	margin:0 auto;
+	height:100vh;
+	padding:0;	
+}
+@media screen and (max-width:1000px) {
+	.main.settings {
+		width:95%;	
+	}
+}
+.mainContainer {
+	width:80%;
+	height:100vh;
+	margin:0 auto;
+	padding:0;
+	background-color:#ffffff;	
+}
+.mainContainer section {
+	
+}
+
+/* Button Styles */
+button {
+	margin:0;
+	padding:0;	
+}
+/*button.btn*/
+.btn {
+    font-family: 'Open Sans', sans-serif;
+    display: inline-block;
+    font-weight: 400;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    -ms-touch-action: manipulation;
+    touch-action: manipulation;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    border: 1px solid #aaa;
+    color: #222;
+    background: #fff none;
+    letter-spacing: .1em;
+	line-height: 2em;	
+    border-radius: 5px;
+    margin: .5em 1em .5em 0;  
+	padding: 0.5em 1.5em;   /* .5 1.5,  0.4em .6em */
+	width:auto;
+    font-weight: bold;
+    font-size: 1.1em;  /* 1.5 */
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    border-radius: 8px;
+    -webkit-box-shadow: 2px 2px 3px 1px rgba(50, 50, 50, 0.55);
+    -moz-box-shadow:    2px 2px 3px 1px rgba(50, 50, 50, 0.55);
+    box-shadow:         2px 2px 3px 1px rgba(50, 50, 50, 0.55);
+}
+@media screen and (max-width:1000px) {
+  button.btn	 {
+    margin: .5em 1em .5em 0;  
+	padding: 0.5em 1.3em;
+/*	height: 1.8em; */
+    font-size: .9em;
+    font-size: 1.0em;	
+  }
+}
+
+.btn p {
+	margin: 0px;
+	padding: 0px;
+}
+.settingsBlock.buttons .btn {
+	float:left;
+}
+.settingsBlock button:first-of-type {
+	margin-left:0;
+}
+.btn.active {
+    color: #333333;
+    background-color: #9fc9ed; 
+}
+.btn.info {
+    background-color: #99ccff;
+	margin:1em 5em;
+}
+.btn.settings.inactive, .btn.settings.inactive:hover {
+    background-color: #ffffff; 
+}
+.btn.settings {
+    background-color: #faface;  
+	float:left;
+}
+.btn.settings.active {
+    background-color: #e8e80b; 
+}
+.btn.settings:hover {
+    background-color: #e8e80b; 
+}
+.btn.action {
+    background-color:#4C9726;
+	color:#ffffff;
+	text-shadow: 1px 1px 2px #333;	
+}
+.btn.action a {
+	color:#ffffff;
+	text-decoration:none;
+	font-weight:300;
+}
+.btn.action.menu {
+    font-size: 1.1em; /* .9em; */
+	float:left;
+	padding:0 .3em;
+	margin:.4em .2em;
+}
+.btn.disabled {
+    color: #000000;
+    background-color: #dddddd; 
+	text-shadow:none;		
+}
+.btn.center, .btn.info.center, .btn.action.center {
+	margin-left:auto;	
+	margin-right:auto;		
+	float:none;
+	display:block;
+}
+.btn.right {
+	float:right;	
+}
+button#playGame {
+	margin-top:4em;	
+}
+.gameIcon {
+	float:left;	
+}
+/* Blocks */
+.settingsRow {
+	overflow:hidden;
+	margin:0 1em 1em 1em;
+	clear:both;
+}
+.settingsRow.moveUpOne {
+	margin-top:-1em;
+}
+.settingsRow.moveUpOne {
+	margin-top:-1em;
+}
+.settingsRow.center .col {
+    margin: 0 auto;
+    float: none;
+}
+.settingsRow.bordered {
+    border-bottom: 1px solid #337ab7;	
+}
+.settingsBlock {
+	margin:.5em 0;
+	float:left;
+	width:100%; 
+}
+.settingsBlock.action {
+	float:right;
+}
+.settingsBlockLeft.action {
+	float:left;
+	margin:.5em 0 0 0;
+}
+
+/* Reponsive */
+.col {
+	float:left;
+	margin:0;
+	padding:0;	
+}
+.span1of12 {
+	width:8%;	
+}
+.span2of12 {
+	width:16%;	
+}
+.span3of12 {
+	width:24%;  	
+}
+.span4of12 {
+	width:33%;	
+}
+.span5of12 {
+	width:40%;	
+}
+.span6of12 {
+	width:49%;	
+}
+.span7of12 {
+	width:57%;	
+}
+.span8of12 {
+	width:65%;	
+}
+.span9of12 {
+	width:73%;	
+}
+.span10of12 {
+	width:81%;	
+}
+.span11of12 {
+	width:89%;	
+}
+.span12of12 {
+	width:99%;	
+}

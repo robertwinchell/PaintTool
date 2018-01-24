@@ -1,0 +1,269 @@
+.tempHidden {
+	display: none !important;
+}
+
+.toolbar {
+	width: 85px;  /* ca 9/29 80px */
+	height: 650px;
+/*	background: #eeeeee;   ca 9/27 888888; */
+	float: left;
+	text-align: center;
+}
+/* new toolbar for right side because all of the buttons don't fit on the left ca 9/28 */
+.toolbarRight {
+	position: relative;
+	width: 85px; 
+	height: 185px;
+	float: right;
+	text-align: center;
+}
+
+#docgroup {
+	position: absolute;
+	bottom: 0;
+}
+
+.vtoolbar {
+	width: 90px;  /* ca 9/28 80px */
+	height: 684px;
+	background: #dddddd;  /*ca 9/28 888888; */
+	float: left;
+	text-align: center;
+}
+.vtoolbar.thick {
+	background-color:#efefef;	
+	height:540px;
+}
+/* ca 9/27 removed : after class name which made it not work */
+.subtoolbar {
+/*	height: 75px;  */
+	width: 942px;
+/*	background: #ffffff;  ca 9/27 #883333px */
+	text-align: center;
+	margin:.1em .5em; /* ca 9/27 added */
+}
+
+.buttonGroup {
+	margin:.5em 0 .5em -.2em;
+	padding:.2em .2em;
+	border:1px solid #aaa;
+	float:left;
+	border-radius:5px;
+}
+.tbtn {
+	float: left;
+	display: inline-block;
+	background-color: #f5f590;  /* ca 9/28 bbd2ea; */
+	width: 75px;
+	height: 70px;
+	margin: 5px 2px;
+	background-size: 75px 70px;
+	cursor: pointer;
+	border-radius: 10px;
+	box-shadow: 1px 1px 1px 0px rgba(0,0,0,0.65);
+	position:relative;
+}
+.tbtn.thick {
+	height:50px;	
+	margin:5px 7px;
+}
+/* ca 9/29 added class */
+.tbtn p {
+	font-family:Helvetica, sans-serif;	
+	font-size:12px;
+/*	margin:4.5em 0 0 0; */
+	text-align:center;
+	width:100%;
+/*	background-color:#f5f590; */
+	position:absolute;
+	top:41px;   
+/*	bottom:0; */
+	left:0;
+/*	border-bottom-left-radius:10px;
+	border-bottom-right-radius:10px;
+*/	
+/*	box-shadow: 1px 1px 1px 0px rgba(0,0,0,0.65);	 */
+/*	letter-spacing:.02em; */
+	padding:0;
+}
+.tbtn#thickbtn p {
+	background-color:white;	
+	top:39px;
+}
+.tbtn#colorbtn p {
+/*	background:none; */
+	top:44px;	
+}
+.tbtn#bucketbtn p {
+	letter-spacing:.07em;	
+}
+.stbtn {
+	font-size: 20px;  /* ca 9/27 24px */
+	padding: 0 15px; /* ca 9/27 0 4px */
+	float: left;
+	display: flex;
+	align-items: center;
+/*	top: 50%;
+	vertical-align: middle;  ca 9/27 */
+	background: #d6fc84;  /*  ca 9/28 bbd2ea; */
+	height: 60px;  /* ca 9/27 70px */
+	margin: 3px .2em;  /* ca 9/27 2px */
+	max-width: 130px;
+	text-align: center;
+	cursor: pointer;
+	border-radius: 10px;  /* ca 9/27 added */
+	font-family:Arial, Helvetica, sans-serif; /* ca 9/27 added */
+	box-shadow: 1px 1px 1px 0px rgba(0,0,0,0.55); 	/* ca 9/27 added */
+}
+
+.swatchbtn {
+	float: left;
+	display: inline-block;
+	width: 96px;
+	height: 96px;
+	margin: 9px;
+	border-radius: 58px;
+	text-align: center;
+	line-height: 96px;
+	font-size: 80px;
+	color: #fff;
+	text-shadow: 0px 0px 5px rgba(0,0,0,1);
+}
+
+.swatchbtn[style="background-color: rgb(255, 255, 255);"] {
+	border:1px solid #dddddd;
+}
+.closebtn {
+	font-size: 14px;  /* ca 9/27 60px */
+	padding: 0 10px 0 10px;
+	float: left;
+	display: flex;
+	align-items: center;
+	top: 50%;
+	vertical-align: middle;
+	background-color:#6C3;  /* ca 9/27 changed from brown */
+/*	background: brown;  ca 9/27*/
+	height: 60px; /* ca 9/27 70px */
+	margin: 2px 2px 2px 20px;  /* ca 9/28 2px */
+	max-width: 120px;
+	text-align: center;
+	cursor: pointer;
+/*	color: white;  ca 9/27 */
+/*	font-weight: bold;  ca 9/27 */
+	border-radius:10px; /* ca 9/27 added */
+	font-family:Arial, Helvetica, sans-serif; /* ca 9/27 added */
+	box-shadow: 1px 1px 1px 0px rgba(0,0,0,0.55); 	/* ca 9/27 added */	
+	letter-spacing:.05em;
+}
+
+.minibtn {
+	background-color: white; /* ca 9/27 #ffffaa; */
+	float: left;
+	display: inline-box;
+	width: 125px;     /* ca 9/28 135px */
+	height: 125px;    /* ca 9/28 135px */
+	background-size: 125px 125px;  /* ca 9/28 125px 125px */
+	cursor: pointer;
+	margin: 10px 0 0 10px;
+}
+
+.minibtn:hover {
+	background-color: #ffffaa;  /* ca 9/27 white; */
+}
+
+.closebtn:hover {
+	color: white;  /* ca 9/28 yellow */
+}
+
+.closebtn:active {
+	background: yellow;
+	color: red;
+}
+
+.stbtn:hover {
+	background: #4ba919;  /* ca 9/28 84DC55; blue */
+	color: white;
+}
+
+.stbtn:active {
+	background: yellow;
+	color: black;
+}
+
+#canvaswrap {
+	position: relative;
+	top: 0;
+	left: 90px;  /* ca 9/29 80px */
+	width: 500px;
+}
+
+.tbtn:hover {
+	background-color: #f1d200; /* ca 9/28 dbdb02 blue */
+}
+
+.tbtn:active {
+	background-color: yellow;
+}
+
+.tbtn.selected /*, .stbtn.selected  ca 9/28 separated stbtn */{
+	background-color: #fff600;  /* ca 9/28 f5f590 fbfc84;  */
+/*	background-image: linear-gradient(#f5f590, #ddb705);   ca 9/28 fdfa93, #e1991a */ 
+}
+.stbtn.selected {
+	background-color: #84dc55;
+}
+
+
+#colorbtn, #colorbtn.selected, #colorbtn:hover, #colorbtn:active {
+	background-image: none;
+}
+
+.tbtn img {
+	width: 75px;
+	height: 70px;
+}
+
+.tbtn > input {
+	display: none;
+}
+
+#c {
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+#pickerhinge {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 0;
+	height: 0;
+	background: red;
+	z-index: 100;
+}
+
+#pickerwrap {
+	position: absolute;
+	top: 0;
+	left: 10px;              /* ca 9/28 0px */
+	width: 880px;            /* ca 9/28 942px */
+/*	height: 684px;  ca 9/28 */
+/*	background: rgba(255, 255, 255, 0.5);  ca 9/28 */
+	background-color: #FFf;  /*  ca 9/27 added */
+	border-radius:5px;       /* ca 9/28 added */
+	border: 2px solid #eeeeee;   /* ca 9/28 6c3 added */
+	box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.55); 	/* ca 9/27 added */
+}
+#lineThickness {
+	margin:10px 0 0 0;	
+}
+
+/*
+@media screen and (max-width: 1060px) {
+	.toolbar {
+		height: 75px;
+		width: 942px;
+	}
+}
+*/

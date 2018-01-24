@@ -1,0 +1,12 @@
+@charset "utf-8";
+/* CSS Document */
+
+@media (min-width: 1100px) {
+.toolbarRight {
+	position: relative;
+	width: 85px; 
+	height: 630px;
+	float: right;
+	text-align: center;
+}
+}

@@ -1,7 +1,0 @@
-#to77 img.jpg ../../web/ws/www/paint
-#to77 twgl.js ../../web/ws/www/paint
-to77 index.html ../../web/ws/www/paint
-to77 paint.js ../../web/ws/www/paint
-
-to77 jquery.js ../../web/ws/www/paint
-to77 jquery.event.ue.js ../../web/ws/www/paint
